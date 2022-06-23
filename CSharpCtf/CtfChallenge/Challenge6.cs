@@ -19,7 +19,7 @@
 
         public string Hint => "Action strategy injection";
 
-        public bool TryUnlock(Action<Key> actionStrategy, out Challenge8? nextChallenge)
+        public bool TryUnlock(Action<Key> actionStrategy, out Challenge7? nextChallenge)
         {
             nextChallenge = default;
             var key = new Key();
@@ -28,7 +28,7 @@
 
             if (key.IsUnlocked)
             {
-                nextChallenge = new Challenge8();
+                nextChallenge = new Challenge7();
                 return true;
             }
 
