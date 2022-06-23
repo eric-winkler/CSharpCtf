@@ -10,7 +10,7 @@ Console.WriteLine(@"
 Welcome, and enjoy! Your first challenge awaits below...
 ");
 
-var challenge = (IChallenge) new Challenge1();
+var challenge = new Challenge1();
 
 do
 {
@@ -19,14 +19,14 @@ do
     var input = Console.ReadLine();
     Thread.Sleep(1000);
 
-    if (challenge.TryUnlock(input, out challenge))
+    if (challenge.TryUnlock(input, out var nextChallenge))
     {
+        Console.WriteLine("That worked!");
+        Console.WriteLine("Your next hint: " + nextChallenge.Hint);
+        Console.WriteLine("Press any key to exit...");
         break;
     }
 
     Console.WriteLine("Hmm, that didn't work, try again?");
 } while (true);
 
-Console.WriteLine("Your next hint: " + challenge.Hint);
-Console.WriteLine("Press any key to exit...");
-Console.ReadLine();
