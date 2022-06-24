@@ -42,22 +42,34 @@ var challenge10 = await Task.Run(() =>
 });
 
 Console.WriteLine(challenge10.Hint);
-var threadSet = new ConcurrentDictionary<int,int>();
+var threadSet = new ConcurrentDictionary<int,object>();
 var unlockTasks = Enumerable.Range(0, 3).Select(i =>
     Task.Run(() =>
     {
-        threadSet[Environment.CurrentManagedThreadId] = Environment.CurrentManagedThreadId;
-        Thread.Sleep(500);  // almost certainly a better way with actual synchronisation constructs
-        while (Environment.CurrentManagedThreadId != threadSet.Keys.Min())
-        {
-            Thread.Sleep(500);
-        }
+        var syncRoot = new object();
+        threadSet[Environment.CurrentManagedThreadId] = syncRoot;
+        Monitor.Enter(syncRoot);
+        Monitor.Wait(syncRoot);
+        Monitor.Exit(syncRoot);
         Console.WriteLine("unlocking with " + Environment.CurrentManagedThreadId);
         challenge10.TryUnlock(out var nextChallenge);
+        
         threadSet.TryRemove(Environment.CurrentManagedThreadId, out _);
+        if (threadSet.Any())
+        {
+            var nextSyncRoot = threadSet.OrderBy(t => t.Key).First().Value;
+            Monitor.Enter(nextSyncRoot);
+            Monitor.Pulse(nextSyncRoot);
+            Monitor.Exit(nextSyncRoot);
+        }
+        
         return nextChallenge;
     }))
     .ToArray();
+var startingSyncRoot = threadSet.OrderBy(t => t.Key).First().Value;
+Monitor.Enter(startingSyncRoot);
+Monitor.Pulse(startingSyncRoot);
+Monitor.Exit(startingSyncRoot);
 
 var results = await Task.WhenAll(unlockTasks);
 var challenge11 = results.Single(r => r != null);
